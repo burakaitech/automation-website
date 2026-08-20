@@ -9,12 +9,12 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const message = body.message || "Hello from Next.js Dashboard!";
 
-    console.log([Next.js API] Forwarding trigger with message: "" to n8n webhook...);
+    console.log(`[Next.js API] Forwarding trigger with message: "${message}" to n8n webhook...`);
 
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: "GET",
       headers: {
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       cache: "no-store",
     });
@@ -22,8 +22,7 @@ export async function POST(request: Request) {
     if (!response.ok) {
       const errorText = await response.text();
       return NextResponse.json(
-        { error: 
-8n webhook error ():  },
+        { error: `n8n webhook error (${response.status}): ${errorText}` },
         { status: response.status }
       );
     }
