@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState } from "react";
-import { Send, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 
 interface TriggerFormProps {
   onTriggerSuccess: (data: any) => void;
@@ -16,7 +18,7 @@ export function TriggerForm({ onTriggerSuccess, onTriggerError, onAddLog }: Trig
     if (loading) return;
 
     setLoading(true);
-    onAddLog(Dispatching trigger to n8n webhook with payload: "");
+    onAddLog(`Dispatching trigger to n8n webhook with payload: "${message}"`);
 
     try {
       const res = await fetch("/api/trigger", {
@@ -35,7 +37,7 @@ export function TriggerForm({ onTriggerSuccess, onTriggerError, onAddLog }: Trig
       onAddLog("Success! Workflow executed and returned response.");
     } catch (err: any) {
       onTriggerError(err.message || "An unexpected error occurred");
-      onAddLog(Failed: );
+      onAddLog(`Failed: ${err.message}`);
     } finally {
       setLoading(false);
     }
