@@ -5,10 +5,10 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const message = body.message || "No message provided";
 
-    console.log([Next.js Backend API] Received automation task: "");
+    console.log(`[Next.js Backend API] Received automation task: "${message}"`);
 
     return NextResponse.json({
-      reply: Custom Next.js Backend processed: "",
+      reply: `Custom Next.js Backend processed: "${message}"`,
       processed: true,
       service: "automation-website",
       timestamp: new Date().toISOString(),
