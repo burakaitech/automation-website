@@ -43,17 +43,14 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="w-full max-w-xl">
         <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800 shadow-2xl rounded-3xl p-6 sm:p-8 space-y-6">
-          {/* Header Component */}
           <Header />
 
-          {/* Trigger Form Component */}
           <TriggerForm
             onTriggerSuccess={handleSuccess}
             onTriggerError={handleError}
             onAddLog={addLog}
           />
 
-          {/* Error Banner */}
           {error && (
             <div className="bg-rose-950/30 border border-rose-800/50 rounded-xl p-4 flex items-start space-x-3 text-xs text-rose-300 font-mono">
               <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
@@ -61,14 +58,11 @@ export default function Home() {
             </div>
           )}
 
-          {/* Response Viewer Component */}
           <ResponseViewer response={response} />
 
-          {/* Activity Log Component */}
           <ActivityLog logs={logs} />
         </div>
 
-        {/* Footer info */}
         <footer className="text-center mt-6 text-xs text-slate-500">
           Built with Next.js 14 • React • Tailwind CSS • Deployed on Railway
         </footer>
