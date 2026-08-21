@@ -1,34 +1,83 @@
 import os
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
+import httpx
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
-from backend.routes.trigger import router as trigger_router
-from backend.routes.automation import router as automation_router
-from backend.config import settings
+from pydantic import BaseModel
 
+# 1. Initialize FastAPI Application
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    version=settings.VERSION,
-    description="Modern Fullstack Web Application with Python FastAPI and React"
+    title="Burak AI - Automation Website",
+    description="Minimalist Fullstack Website with Python FastAPI backend and React frontend",
+    version="1.0.0"
 )
 
-# Register API Routers
-app.include_router(trigger_router)
-app.include_router(automation_router)
+# 2. Configuration
+N8N_WEBHOOK_URL = os.environ.get(
+    "N8N_WEBHOOK_URL",
+    "https://n8n-production-dd18.up.railway.app/webhook/test-webhook"
+)
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Mount Static Files & Serve React Frontend
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+# 3. Pydantic Models (Data Validation)
+class TriggerPayload(BaseModel):
+    message: str = "Hello from Python + React Website!"
 
-if os.path.exists(STATIC_DIR):
-    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+class AutomationPayload(BaseModel):
+    message: str
 
+# 4. Route: Serve Frontend (React UI)
 @app.get("/")
-async def serve_index():
-    index_file = os.path.join(STATIC_DIR, "index.html")
+async def serve_frontend():
+    """Serves the React dashboard (index.html)."""
+    index_file = os.path.join(CURRENT_DIR, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
     return {"message": "Welcome to Burak AI Automation Hub - API Online", "docs": "/docs"}
 
+# 5. Route: Trigger n8n Webhook Pipeline
+@app.post("/api/trigger")
+async def trigger_pipeline(payload: TriggerPayload):
+    """
+    Called by the React Frontend when the user clicks 'Trigger Webhook'.
+    Forwards the trigger to the n8n webhook on Railway.
+    """
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.get(N8N_WEBHOOK_URL)
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"n8n webhook error ({response.status_code}): {response.text}"
+                )
+            try:
+                return response.json()
+            except Exception:
+                return {"raw": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# 6. Route: Custom Python Automation Logic (Executed by n8n)
+@app.post("/api/test-automation")
+async def process_automation_task(payload: AutomationPayload):
+    """
+    Called by the n8n workflow during execution to run custom Python code.
+    """
+    # Write custom AI or automation logic here:
+    processed_message = f"Custom Python FastAPI Backend processed: '{payload.message}'"
+    
+    return {
+        "reply": processed_message,
+        "processed": True,
+        "service": "automation-website-backend"
+    }
+
+# 7. Health Check
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "Python FastAPI"}
+
+# 8. Local Server Runner
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host=settings.HOST, port=settings.PORT, reload=False)
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
