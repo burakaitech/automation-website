@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Zap, Send, Loader2, CheckCircle, Activity, Terminal, AlertCircle } from "lucide-react";
 
 export function TriggerCard() {
-  const [message, setMessage] = useState("Fullstack Next.js + React + Python FastAPI trigger");
+  const [message, setMessage] = useState("Direct trigger from Next.js to FastAPI");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -12,7 +12,7 @@ export function TriggerCard() {
     {
       id: "init",
       time: new Date().toLocaleTimeString(),
-      text: "Next.js UI & FastAPI Python backend initialized and connected to n8n.",
+      text: "Next.js UI & FastAPI Python backend initialized (n8n removed).",
     },
   ]);
 
@@ -34,10 +34,11 @@ export function TriggerCard() {
     setLoading(true);
     setError(null);
     setResponse(null);
-    addLog(`Sending trigger to /api/trigger with payload: "${message}"`);
+    addLog(`Sending trigger to /api/py/process with payload: "${message}"`);
 
     try {
-      const res = await fetch("/api/trigger", {
+      // Direct call to the Python FastAPI backend!
+      const res = await fetch("/api/py/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
@@ -47,7 +48,7 @@ export function TriggerCard() {
       if (!res.ok) throw new Error(data.error || data.detail || "Automation execution failed");
 
       setResponse(data);
-      addLog("Success! Workflow executed through n8n and Python backend.");
+      addLog("Success! Python backend processed the request instantly.");
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");
       addLog(`Error: ${err.message}`);
@@ -66,9 +67,9 @@ export function TriggerCard() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              Automation Hub
+              Direct Automation Hub
             </h1>
-            <p className="text-xs text-slate-400 font-medium">Next.js 14 • React 18 • Python FastAPI • n8n</p>
+            <p className="text-xs text-slate-400 font-medium">Next.js 14 • React 18 • Python FastAPI (Direct)</p>
           </div>
         </div>
         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
@@ -82,14 +83,14 @@ export function TriggerCard() {
         <div className="space-y-1.5">
           <label htmlFor="payload" className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex justify-between">
             <span>Payload Message</span>
-            <span className="text-[10px] text-slate-500 font-mono">POST /api/trigger</span>
+            <span className="text-[10px] text-slate-500 font-mono">POST /api/py/process</span>
           </label>
           <input
             id="payload"
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Enter a message to pass to the workflow..."
+            placeholder="Enter a message to pass to Python..."
             className="w-full bg-slate-950/80 border border-slate-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 outline-none transition duration-150"
           />
         </div>
@@ -102,11 +103,11 @@ export function TriggerCard() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Executing Automation Pipeline...</span>
+              <span>Processing in Python...</span>
             </>
           ) : (
             <>
-              <span>Trigger Webhook</span>
+              <span>Call Python Backend</span>
               <Send className="w-4 h-4 ml-1" />
             </>
           )}
@@ -127,7 +128,7 @@ export function TriggerCard() {
           <div className="flex items-center justify-between text-xs font-semibold text-emerald-400 uppercase tracking-wider">
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-emerald-400" />
-              <span>Pipeline Response</span>
+              <span>Python Backend Response</span>
             </div>
             <span className="text-[11px] font-mono text-emerald-400/80 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800/40">
               200 OK
